@@ -33,7 +33,7 @@ export function CTASection() {
 
           {/* Subheading */}
           <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            Join thousands of talents and media companies already using PAYOLA to create amazing content together.
+            Join thousands of talents and media companies already using PAYOLLAR to create amazing content together.
           </p>
 
           {/* Stats */}
