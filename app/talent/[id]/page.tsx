@@ -35,6 +35,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { getTalentProfile, type TalentProfile } from "@/lib/talent-data"
+import { BookingModal } from "@/components/booking/booking-modal"
 
 export default function TalentProfilePage({ params }: { params: { id: string } }) {
   const [talent, setTalent] = useState<TalentProfile | null>(null)
@@ -44,10 +45,15 @@ export default function TalentProfilePage({ params }: { params: { id: string } }
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const talentData = getTalentProfile(params.id)
-    setTalent(talentData)
-    setLoading(false)
-  }, [params.id])
+    const fetchTalentData = async () => {
+      const resolvedParams = await params; // Await the params
+      const talentData = getTalentProfile(resolvedParams.id);
+      setTalent(talentData);
+      setLoading(false);
+    };
+
+    fetchTalentData();
+  }, [params]);
 
   if (loading) {
     return (
@@ -559,7 +565,7 @@ export default function TalentProfilePage({ params }: { params: { id: string } }
                   <Link key={i} href={`/talent/${i === 1 ? "2" : i === 2 ? "3" : "4"}`}>
                     <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                       <Avatar className="w-12 h-12">
-                        <AvatarImage src={`/placeholder.svg?height=48&width=48`} alt={`Talent ${i}`} />
+                        <AvatarImage src={`/generic-placeholder-icon.png?height=48&width=48`} alt={`Talent ${i}`} />
                         <AvatarFallback>T{i}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
@@ -583,75 +589,25 @@ export default function TalentProfilePage({ params }: { params: { id: string } }
       </div>
 
       {/* Booking Modal */}
-      {showBookingModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Book {talent.name}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center">
-                <Avatar className="w-16 h-16 mx-auto mb-4">
-                  <AvatarImage src={talent.avatar || "/placeholder.svg"} alt={talent.name} />
-                  <AvatarFallback>
-                    {talent.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <h3 className="font-semibold">{talent.name}</h3>
-                <p className="text-gray-600">{talent.title}</p>
-                <div className="text-2xl font-bold text-purple-600 mt-2">{talent.rate}</div>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Event Date</label>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Event Duration</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <option>1 hour</option>
-                    <option>2 hours</option>
-                    <option>3 hours</option>
-                    <option>4+ hours</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Wedding, Corporate Event, Radio Show"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                  <textarea
-                    rows={3}
-                    placeholder="Tell us about your event..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  ></textarea>
-                </div>
-              </div>
-
-              <div className="flex space-x-3 pt-4">
-                <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setShowBookingModal(false)}>
-                  Cancel
-                </Button>
-                <Button className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
-                  Send Request
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <BookingModal
+        isOpen={showBookingModal}
+        onClose={() => setShowBookingModal(false)}
+        talent={{
+          id: talent.id,
+          name: talent.name,
+          title: talent.title,
+          avatar: talent.avatar,
+          rate: talent.rate,
+          hourlyRate: Number.parseInt(talent.rate.replace(/[^0-9]/g, "")),
+          availability: talent.availability,
+          location: talent.location,
+          rating: talent.rating,
+          reviews: talent.reviews,
+          responseTime: talent.stats.responseTime,
+          genres: talent.genres,
+          equipment: talent.equipment,
+        }}
+      />
     </div>
   )
 }
